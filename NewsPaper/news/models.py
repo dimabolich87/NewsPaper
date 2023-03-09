@@ -9,14 +9,14 @@ class Author(models.Model):
 
     def update_rating(self):
         # Получаем суммарный рейтинг автора на основе его статей
-        # author_articles_rating = Post.objects.filter(author=self).aggregate(post_rating=Sum('rating_post'))
-        author_articles_rating = self.post_set.all().aggregate(post_rating=Sum('rating_post'))
+        author_articles_rating = Post.objects.filter(author=self).aggregate(post_rating=Sum('rating_post')*3)
         # Получаем суммарный рейтинг автора на основе его комментариев
-        author_comments_rating = self.user.comment_set.all().aggregate(com_rating=Sum('comment_rating'))
+        author_comments_rating = Comment.objects.filter(user_id=self.user).aggregate(com_rating=Sum('rating_comment'))
         # Получаем суммарный рейтинг автора на основе комментариев к его статьям
-        all_comments_to_author_articles_rating = Comment.objects.filter(post__author=self.id)
-        return author_articles_rating * 3 + author_comments_rating + all_comments_to_author_articles_rating
-
+        all_comments_to_author_articles_rating = Comment.objects.filter(post_comment__author__user=self.user).aggregate(
+            comment_rating_sum=Sum('rating_comment'))
+        self.rating_author = author_articles_rating['post_rating'] + author_comments_rating['com_rating'] + all_comments_to_author_articles_rating['comment_rating_sum']
+        self.save()
 
 class Category(models.Model):
     name_category = models.CharField(max_length=255, unique=True)
@@ -42,10 +42,12 @@ class Post(models.Model):
 
     def like(self):
         self.likes +=1
+        self.rating_post +=1
         self.save()
 
     def dislike(self):
         self.dislikes +=1
+        self.rating_post -= 1
         self.save()
 
     def preview(self):
