@@ -1,0 +1,55 @@
+python manage.py shell
+from news.models import *
+1
+user1 = User.objects.create_user('Иванов Сергей Петрович')
+user2 = User.objects.create_user('Петров Дмитрий Иванович')
+2
+author1 = Author.objects.create(user=user1)        
+author2 = Author.objects.create(user=user2) 
+3
+culturcategory = Category.objects.create(name_category = 'культура')
+sportcategory = Category.objects.create(name_category = 'спорт')     
+economcategory = Category.objects.create(name_category = 'экономика') 
+tethcategory = Category.objects.create(name_category = 'технологии')
+4
+post1 = Post.objects.create(author = author1, post_types = 'AR', title_post = 'Статья1', text_post = '
+Текст статьи1')  
+post2 = Post.objects.create(author = author1, post_types = 'AR', title_post = 'Статья2', text_post = 'Текст статьи2')
+post3 = Post.objects.create(author = author2, post_types = 'NW', title_post = 'Новость1', text_post = 'Текст новости1')
+5
+PostCategory.objects.create(post=post1, category=culturcategory)
+PostCategory.objects.create(post=post2, category=economcategory)
+PostCategory.objects.create(post=post2, category=sportcategory)
+PostCategory.objects.create(post=post3, category=economcategory)
+PostCategory.objects.create(post=post3, category=tethcategory)
+6
+comment1 = Comment.objects.create(post_comment=post1, user=user1,text_comment='Комментарий 1')
+comment2 = Comment.objects.create(post_comment=post1, user=user1,text_comment='Комментарий 2')
+comment3 = Comment.objects.create(post_comment=post2, user=user2,text_comment='Комментарий 3')
+comment4 = Comment.objects.create(post_comment=post3, user=user2,text_comment='Комментарий 4')
+7
+post1.like()
+post1.like()
+post2.dislike()
+post3.like()
+comment1.like_comment() 
+comment2.like_comment() 
+comment3.like_comment() 
+comment4.dislike_comment() 
+8
+ a1=Author.objects.get(id=1)
+a1.update_rating()
+9
+
+best_a=Author.objects.all().order_by('-rating_author', 'user__username').values('user__username','rating_author').first()
+print(best_a)
+10
+best_post = Post.objects.all().order_by('-rating_post', 'date_time_post').first()
+print(best_post.date_time_post, best_post.author.user.username, best_post.rating_post, best_post.title_post, best_post.preview())
+11
+post = Post.objects.first() # выбираем первую статью, можно выбрать любую другую статью, заменив метод first() на метод get() или filter()
+comments = Comment.objects.filter(post_comment=post)
+
+for comment in comments:
+    print(comment.date_time_comment, comment.user.username, comment.rating_comment, comment.text_comment)
+
